@@ -13,7 +13,7 @@ die Anzahl der ausgegebenen Menge kann in der main funktion bestimmt werden!
 ## Voraussetzungen
 
 - **Scala**: Dieses Projekt wurde mit Scala 2.13 entwickelt.
-- **Java**: Eine kompatible Java Virtual Machine ist erforderlich, z.B. Zulu-17.
+- **Java**: Eine kompatible Java Virtual Machine ist erforderlich.
 - **sbt (Scala Build Tool)**: Zum Kompilieren und Ausführen des Programms.
   "brew install sbt"
 
