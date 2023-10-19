@@ -22,16 +22,17 @@ die Anzahl der ausgegebenen Menge kann in der main funktion bestimmt werden!
 2. Platziere deine `.env` Datei im Hauptverzeichnis des Projekts.
 3. Befülle die `.env` Datei mit deinen Reddit-API-Zugangsdaten:
 
-CLIENT_ID="DeinRedditClientID"
-CLIENT_SECRET="DeinRedditClientSecret"
-REDIRECT_URI="DeinRedirectURI"
-USERNAME="DeinRedditUsername"
-PASSWORD="DeinRedditPassword"
+CLIENT_ID="DeinRedditClientID"  
+CLIENT_SECRET="DeinRedditClientSecret"  
+REDIRECT_URI="DeinRedirectURI"  
+USERNAME="DeinRedditUsername"  
+PASSWORD="DeinRedditPassword"  
 
 Registriere dich bei Reddit. Danach kannst du 
 die client_id und das client_secret über diesen Link erhalten: 
 [hier klicken](https://www.reddit.com/prefs/apps)
 klicke danach auf "are you a developer? create an app..."
+das feld REDIRECT_URI kannst du erstmal leer lassen...
 
 
 ## Ausführung des Programms
