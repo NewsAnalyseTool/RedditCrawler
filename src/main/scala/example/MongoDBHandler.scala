@@ -11,7 +11,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 
 class MongoDBHandler(env: mutable.Map[String, String]) {
-  private val mongoClient: MongoClient = MongoClient("mongodb://Sebastian:U9fR%40-6DMkW!Hq6mpXt!@141.45.212.245:27017/?authMechanism=SCRAM-SHA-256&authSource=Projektstudium")
+  private val mongoClient: MongoClient = MongoClient(env.getOrElse("CONNECTION_STRING",""))
   private val database: MongoDatabase = mongoClient.getDatabase("Projektstudium")
   private val collection: MongoCollection[Document] = database.getCollection("redditRawData")
 
