@@ -1,6 +1,37 @@
+# IntelliJ IDEA files
 .idea/
-project/
-.bsp/
+
+# SBT specific
 target/
+project/target/
+project/project/
+lib_managed/
+src_managed/
+project/src_managed/
+
+# Scala-IDE specific
+.scala_dependencies
+.worksheet
+
+# BSP (Build Server Protocol)
+.bsp/
+
+# Environment variables file
 .env
+
+# Log files
+logs/
+*.log
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# If using Maven, uncomment the following lines:
+# pom.xml.tag
+# pom.xml.releaseBackup
+# pom.xml.versionsBackup
+
+# If you have other specific files or directories to ignore, add them here
+
 

@@ -13,7 +13,9 @@ libraryDependencies ++= Seq(
   // Using MongoDB Scala driver
   "org.mongodb.scala" %% "mongo-scala-driver" % "4.3.3",
   "org.slf4j" % "slf4j-api" % "2.0.5",
-  "org.slf4j" % "slf4j-simple" % "2.0.5"
+  "org.slf4j" % "slf4j-simple" % "2.0.5",
+  "ch.qos.logback" % "logback-classic" % "1.4.7",
+  "org.slf4j" % "slf4j-api" % "2.0.5"
 )
 
 

@@ -1,10 +1,12 @@
 package example
 
+import org.mongodb.scala.Document
 import play.api.libs.json.{JsValue, Json}
-
+import org.slf4j.LoggerFactory
 import scala.collection.mutable
 
 object RedditAPI {
+  private val logger = LoggerFactory.getLogger(getClass)
   val environment = new Environment
   val env: mutable.Map[String, String] = environment.load()
   def main(args: Array[String]): Unit = {
@@ -31,8 +33,8 @@ object RedditAPI {
     val dbHandler = new MongoDBHandler(env)
     val postsSeq: Seq[JsValue] = posts.as[Seq[JsValue]]
 
-    // Save to MongoDB
-    dbHandler.insertDocumentsFromJson(postsSeq)
-    println("Posts saved to MongoDB successfully!")
+    // Save or update in MongoDB
+    postsSeq.foreach(post => dbHandler.upsertDocument(Document(post.toString())))
+    logger.info("Posts processed for MongoDB successfully!")
   }
 }

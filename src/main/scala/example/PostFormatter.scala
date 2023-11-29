@@ -1,7 +1,6 @@
 package example
 
 import play.api.libs.json.{JsArray, JsValue, Json}
-
 import java.time.format.DateTimeFormatter
 import java.time.{Instant, ZoneId, ZonedDateTime}
 
@@ -20,13 +19,13 @@ class PostFormatter {
 
         Some(
           Json.obj(
-            "Kategorie" -> (data \ "subreddit").as[String],
-            "Titel" -> (data \ "title").as[String],
-            "Text" -> selftext,
-            "Datum" -> formattedDate,
-            "isReddit" -> true,
-            "Upvotes" -> (data \ "ups").as[Int],
-            "Anzahl der Kommentare" -> (data \ "num_comments").as[Int]
+            "title" -> (data \ "title").as[String],
+            "date" -> formattedDate,
+            "subreddit" -> (data \ "subreddit").as[String],
+            "comments" -> (data \ "num_comments").as[Int],
+            "source" -> "reddit",
+            "url" -> (data \ "url").as[String],
+            "upvotes" -> (data \ "ups").as[Int]
           )
         )
       } else {
@@ -36,3 +35,4 @@ class PostFormatter {
     Json.toJson(formattedPosts)
   }
 }
+
