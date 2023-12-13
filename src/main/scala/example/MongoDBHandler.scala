@@ -32,8 +32,13 @@ class MongoDBHandler(env: mutable.Map[String, String]) {
   }
 
   def insertDocument(document: Document): Unit = {
-    val insertObservable = collection.insertOne(document)
-    observeResults(insertObservable)
+    try {
+      val insertObservable = collection.insertOne(document)
+      observeResults(insertObservable)
+    } catch {
+      case e: MongoWriteException if e.getError.getCode == 11000 =>
+        logger.error("Duplicate key error, document already exists")
+    }
   }
 
   private def observeResults[T](observable: Observable[T]): Unit = {

@@ -33,11 +33,10 @@ object RedditAPI {
     val dbHandler = new MongoDBHandler(env)
     val postsSeq: Seq[JsValue] = posts.as[Seq[JsValue]]
 
-    // Save or update in MongoDB
     postsSeq.foreach { postJson =>
-      val postMap = postJson.as[Map[String, JsValue]]
+      val postMap = postJson.as[Map[String, JsValue]] - "_id"
       val document = Document(postMap.mapValues(_.toString))
-      dbHandler.upsertDocument(document)
+      dbHandler.insertDocument(document)
     }
     logger.info("Posts processed for MongoDB successfully!")
   }
