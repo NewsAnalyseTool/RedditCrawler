@@ -39,26 +39,29 @@ class RedditClient(env: mutable.Map[String, String], rateLimitHandler: RateLimit
     }
   }
 
-  def getPosts(token: String, postLimit: Int, postType: String): Either[String, JsValue] = {
+  def getPosts(token: String, postLimit: Int): Either[String, JsValue] = {
     val username = env.getOrElse("USERNAME", "")
 
     val request = basicRequest
       .header("User-Agent", s"RedditAPIApp/1.0 by $username")
       .header("Authorization", s"bearer $token")
-      .get(uri"https://oauth.reddit.com/r/all/$postType?limit=$postLimit")
+      .get(uri"https://oauth.reddit.com/r/PoliticalDiscussion?limit=$postLimit")
 
     val response = Try(request.send(backend)).getOrElse(return Left("Failed to send request."))
 
     response.code match {
-      case code if code.code == 429 => rateLimitHandler.handle(); getAccessToken(); return Left("Rate limited.")
+      case code if code.code == 429 =>
+        rateLimitHandler.handle();
+        getAccessToken();
+        return Left("Rate limited.")
       case _ =>
     }
 
     response.body match {
       case Right(content) => Right(Json.parse(content))
       case Left(error) =>
-        println(s"Error fetching $postType posts: $error")
-        Left(s"Error fetching $postType posts: $error")
+        println(s"Error fetching posts: $error")
+        Left(s"Error fetching posts: $error")
     }
   }
 }

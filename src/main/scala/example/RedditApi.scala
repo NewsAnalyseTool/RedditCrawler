@@ -17,7 +17,7 @@ object RedditAPI {
     val token = redditClient.getAccessToken()
     if (token.nonEmpty) {
       val desiredPostType = "new" //rising, hot, new, trending
-      val posts = redditClient.getPosts(token, 1000, desiredPostType)
+      val posts = redditClient.getPosts(token, 1000)
       posts match {
         case Right(json) =>
           val formattedPosts = postFormatter.format(json, ignoreEmptySelftext = true)
@@ -34,7 +34,11 @@ object RedditAPI {
     val postsSeq: Seq[JsValue] = posts.as[Seq[JsValue]]
 
     // Save or update in MongoDB
-    postsSeq.foreach(post => dbHandler.upsertDocument(Document(post.toString())))
+    postsSeq.foreach { postJson =>
+      val postMap = postJson.as[Map[String, JsValue]]
+      val document = Document(postMap.mapValues(_.toString))
+      dbHandler.upsertDocument(document)
+    }
     logger.info("Posts processed for MongoDB successfully!")
   }
 }

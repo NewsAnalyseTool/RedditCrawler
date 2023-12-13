@@ -14,13 +14,26 @@ class MongoDBHandler(env: mutable.Map[String, String]) {
   private val logger = LoggerFactory.getLogger(getClass)
   private val mongoClient: MongoClient = MongoClient(env.getOrElse("CONNECTION_STRING", ""))
   private val database: MongoDatabase = mongoClient.getDatabase("Projektstudium")
-  private val collection: MongoCollection[Document] = database.getCollection("redditRawData")
+  private val collection: MongoCollection[Document] = database.getCollection("redditTestData")
 
   def upsertDocument(document: Document): Unit = {
-    val url = document.getString("url")
+    val id = document.getString("_id")
     val updateOptions = new UpdateOptions().upsert(true)
-    val updateObservable = collection.updateOne(equal("url", url), set("document", document), updateOptions)
+
+    // Remove the _id field from the document for the update
+    val updateDoc = Document(document)
+    updateDoc.remove("_id")
+
+    // Create the update document using the Document companion object
+    val update = Document("$set" -> updateDoc)
+
+    val updateObservable = collection.updateOne(equal("_id", id), update, updateOptions)
     observeResults(updateObservable)
+  }
+
+  def insertDocument(document: Document): Unit = {
+    val insertObservable = collection.insertOne(document)
+    observeResults(insertObservable)
   }
 
   private def observeResults[T](observable: Observable[T]): Unit = {
