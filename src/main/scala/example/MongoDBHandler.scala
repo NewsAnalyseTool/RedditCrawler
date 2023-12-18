@@ -1,14 +1,15 @@
 package example
-
 import org.mongodb.scala._
 import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Updates._
-import org.mongodb.scala.model.UpdateOptions
+import org.mongodb.scala.model.{IndexOptions, Indexes, UpdateOptions}
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
 import scala.concurrent.Await
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import scala.util.{Failure, Success}
 
 class MongoDBHandler(env: mutable.Map[String, String]) {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -16,18 +17,22 @@ class MongoDBHandler(env: mutable.Map[String, String]) {
   private val database: MongoDatabase = mongoClient.getDatabase("Projektstudium")
   private val collection: MongoCollection[Document] = database.getCollection("redditTestData")
 
+  // Ensuring that the date field has a unique index
+  collection.createIndex(Indexes.ascending("date"), IndexOptions().unique(true)).toFuture().onComplete {
+    case Success(result) => logger.info(s"Index creation result: $result")
+    case Failure(e) => logger.error("Failed to create index", e)
+  }
+
   def upsertDocument(document: Document): Unit = {
-    val id = document.getString("_id")
+    val date = document.getString("date")
     val updateOptions = new UpdateOptions().upsert(true)
 
-    // Remove the _id field from the document for the update
     val updateDoc = Document(document)
-    updateDoc.remove("_id")
+    updateDoc.remove("_id") // Remove the _id field as we are using date for uniqueness
 
-    // Create the update document using the Document companion object
     val update = Document("$set" -> updateDoc)
 
-    val updateObservable = collection.updateOne(equal("_id", id), update, updateOptions)
+    val updateObservable = collection.updateOne(equal("date", date), update, updateOptions)
     observeResults(updateObservable)
   }
 
@@ -50,3 +55,4 @@ class MongoDBHandler(env: mutable.Map[String, String]) {
     Await.result(observable.toFuture(), 10.seconds)
   }
 }
+

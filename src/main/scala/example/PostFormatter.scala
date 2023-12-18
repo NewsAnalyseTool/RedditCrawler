@@ -1,6 +1,6 @@
 package example
 
-import play.api.libs.json.{JsArray, JsValue, Json}
+import play.api.libs.json._
 import java.time.format.DateTimeFormatter
 import java.time.{Instant, ZoneId, ZonedDateTime}
 
@@ -20,14 +20,13 @@ class PostFormatter {
 
         Some(
           Json.obj(
-            "_id" -> (data \ "id").as[String],
-            "url" -> (data \ "url").as[String],
-            "title" -> (data \ "title").as[String],
-            "date" -> formattedDate,
-            "subreddit" -> subreddit,
-            "comments" -> (data \ "num_comments").as[Int],
-            "selftext" -> selftext  // Include selftext in the JSON object
-            // Add other fields as needed
+            "_id" -> JsString((data \ "id").as[String]),
+            "url" -> JsString((data \ "url").as[String]),
+            "title" -> JsString((data \ "title").as[String]),
+            "date" -> JsString(formattedDate),
+            "subreddit" -> JsString(subreddit),
+            "comments" -> JsNumber((data \ "num_comments").as[Int]),
+            "selftext" -> JsString(selftext)
           )
         )
       } else {

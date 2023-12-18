@@ -1,7 +1,8 @@
 package example
 
-import org.mongodb.scala.Document
-import play.api.libs.json.{JsValue, Json}
+import org.mongodb.scala.{Document, MongoClient, MongoCollection, MongoDatabase}
+import org.mongodb.scala.bson._
+import play.api.libs.json.{JsBoolean, JsNumber, JsString, JsValue}
 import org.slf4j.LoggerFactory
 import scala.collection.mutable
 
@@ -34,10 +35,30 @@ object RedditAPI {
     val postsSeq: Seq[JsValue] = posts.as[Seq[JsValue]]
 
     postsSeq.foreach { postJson =>
-      val postMap = postJson.as[Map[String, JsValue]] - "_id"
-      val document = Document(postMap.mapValues(_.toString))
+      val bsonDocument = BsonDocument()
+
+      postJson.as[Map[String, JsValue]].foreach {
+        case ("_id", JsString(value)) =>
+          // Convert string to ObjectId if possible, otherwise MongoDB will generate it
+          try {
+            bsonDocument.append("_id", BsonObjectId(value))
+          } catch {
+            case _: IllegalArgumentException => // Skip setting _id if invalid, MongoDB will auto-generate it
+          }
+        case (key, JsString(value)) => bsonDocument.append(key, BsonString(value))
+        case (key, JsNumber(value)) => bsonDocument.append(key, BsonString(value.toString))
+        case (key, JsBoolean(value)) => bsonDocument.append(key, BsonString(value.toString))
+        case _ => // Ignore other cases or handle as needed
+      }
+
+      // Create a MongoDB Document from the BsonDocument
+      val document = Document(bsonDocument)
+
+      // Insert the document into MongoDB
       dbHandler.insertDocument(document)
     }
     logger.info("Posts processed for MongoDB successfully!")
   }
+
+
 }
