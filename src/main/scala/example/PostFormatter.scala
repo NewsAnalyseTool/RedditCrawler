@@ -9,10 +9,10 @@ class PostFormatter {
     val posts = (json \ "data" \ "children").as[JsArray].value
     val formattedPosts = posts.flatMap { post =>
       val data = post \ "data"
-      val subreddit = (data \ "subreddit").as[String]
-      val selftext = (data \ "selftext").as[String]
+      val category = (data \ "subreddit").as[String] // Assuming category is same as subreddit
+      val text = (data \ "selftext").as[String]
 
-      if (subreddit == "PoliticalDiscussion") {
+      if (category == "PoliticalDiscussion") {
         val createdUtc = (data \ "created_utc").as[Long]
         val instant = Instant.ofEpochSecond(createdUtc)
         val zonedDateTime = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault())
@@ -24,9 +24,10 @@ class PostFormatter {
             "url" -> JsString((data \ "url").as[String]),
             "title" -> JsString((data \ "title").as[String]),
             "date" -> JsString(formattedDate),
-            "subreddit" -> JsString(subreddit),
+            "category" -> JsString(category), // Changed from "subreddit" to "category"
             "comments" -> JsNumber((data \ "num_comments").as[Int]),
-            "selftext" -> JsString(selftext)
+            "text" -> JsString(text), // Changed from "selftext" to "text"
+            "source" -> "Reddit"
           )
         )
       } else {
