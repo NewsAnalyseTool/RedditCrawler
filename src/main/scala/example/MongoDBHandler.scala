@@ -6,7 +6,7 @@ import org.mongodb.scala.model.{IndexOptions, Indexes, UpdateOptions}
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
@@ -15,7 +15,7 @@ class MongoDBHandler(env: mutable.Map[String, String]) {
   private val logger = LoggerFactory.getLogger(getClass)
   private val mongoClient: MongoClient = MongoClient(env.getOrElse("CONNECTION_STRING", ""))
   private val database: MongoDatabase = mongoClient.getDatabase("Projektstudium")
-  private val collection: MongoCollection[Document] = database.getCollection("redditTestData")
+  private val collection: MongoCollection[Document] = database.getCollection("reddit_raw_data")
 
   // Ensuring that the date field has a unique index
   collection.createIndex(Indexes.ascending("date"), IndexOptions().unique(true)).toFuture().onComplete {
@@ -37,12 +37,19 @@ class MongoDBHandler(env: mutable.Map[String, String]) {
   }
 
   def insertDocument(document: Document): Unit = {
-    try {
-      val insertObservable = collection.insertOne(document)
-      observeResults(insertObservable)
-    } catch {
-      case e: MongoWriteException if e.getError.getCode == 11000 =>
+    val date = document.getString("date")
 
+    collection.countDocuments(equal("date", date)).head().flatMap { count =>
+      if (count > 0) {
+        logger.info(s"Document with date $date already exists. Skipping insertion.")
+        Future.successful(())
+      } else {
+        val insertObservable = collection.insertOne(document)
+        insertObservable.toFuture()
+      }
+    }.onComplete {
+      case Success(_) => logger.info(s"Insertion completed for date $date")
+      case Failure(e) => logger.error(s"Failed to insert document with date $date", e)
     }
   }
 
@@ -56,4 +63,3 @@ class MongoDBHandler(env: mutable.Map[String, String]) {
     Await.result(observable.toFuture(), 10.seconds)
   }
 }
-
