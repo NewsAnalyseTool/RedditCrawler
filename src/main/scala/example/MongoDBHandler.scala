@@ -15,7 +15,7 @@ class MongoDBHandler(env: mutable.Map[String, String]) {
   private val logger = LoggerFactory.getLogger(getClass)
   private val mongoClient: MongoClient = MongoClient(env.getOrElse("CONNECTION_STRING", ""))
   private val database: MongoDatabase = mongoClient.getDatabase("Projektstudium")
-  private val collection: MongoCollection[Document] = database.getCollection("reddit_raw_data")
+  private val collection: MongoCollection[Document] = database.getCollection("reddit_test_data")
 
   // Ensuring that the date field has a unique index
   collection.createIndex(Indexes.ascending("date"), IndexOptions().unique(true)).toFuture().onComplete {

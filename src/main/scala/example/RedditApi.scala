@@ -18,7 +18,7 @@ object RedditAPI {
     val token = redditClient.getAccessToken()
     if (token.nonEmpty) {
       val desiredPostType = "new" //rising, hot, new, trending
-      val posts = redditClient.getPosts(token, 1000)
+      val posts = redditClient.getPosts(token, 1000, desiredPostType)
       posts match {
         case Right(json) =>
           val formattedPosts = postFormatter.format(json, ignoreEmptySelftext = true)
