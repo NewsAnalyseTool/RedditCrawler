@@ -10,6 +10,7 @@ object RedditAPI {
   private val logger = LoggerFactory.getLogger(getClass)
   val environment = new Environment
   val env: mutable.Map[String, String] = environment.load()
+
   def main(args: Array[String]): Unit = {
     val rateLimitHandler = new RateLimitHandler
     val redditClient = new RedditClient(env, rateLimitHandler)
@@ -17,18 +18,25 @@ object RedditAPI {
 
     val token = redditClient.getAccessToken()
     if (token.nonEmpty) {
-      val desiredPostType = "hot" //rising, hot, new, trending
-      val posts = redditClient.getPosts(token, 1000, desiredPostType)
-      posts match {
-        case Right(json) =>
-          val formattedPosts = postFormatter.format(json, ignoreEmptySelftext = true)
-          savePostsToMongo(formattedPosts)
-        case Left(error) => println(error)
+      val desiredPostType = "new" // Options: rising, hot, new, trending
+      val subreddits = List("news", "worldnews", "politics", "technology",
+        "science", "environment", "economics",
+        "Coronavirus", "TrueReddit", "UpliftingNews")
+
+      subreddits.foreach { subreddit =>
+        redditClient.getPosts(token, 1000, desiredPostType, subreddit) match {
+          case Right(json) =>
+            val formattedPosts = postFormatter.format(json, ignoreEmptySelftext = true)
+            savePostsToMongo(formattedPosts)
+          case Left(error) =>
+            println(s"Error fetching posts from $subreddit: $error")
+        }
       }
     } else {
       println("Failed to obtain access token.")
     }
   }
+
 
   def savePostsToMongo(posts: JsValue): Unit = {
     val dbHandler = new MongoDBHandler(env)

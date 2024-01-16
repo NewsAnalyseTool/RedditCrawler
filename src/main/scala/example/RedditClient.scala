@@ -39,13 +39,13 @@ class RedditClient(env: mutable.Map[String, String], rateLimitHandler: RateLimit
     }
   }
 
-  def getPosts(token: String, postLimit: Int, postType: String): Either[String, JsValue] = {
+  def getPosts(token: String, postLimit: Int, postType: String, subreddit: String): Either[String, JsValue] = {
     val username = env.getOrElse("USERNAME", "")
 
     val request = basicRequest
       .header("User-Agent", s"RedditAPIApp/1.0 by $username")
       .header("Authorization", s"bearer $token")
-      .get(uri"https://oauth.reddit.com/r/PoliticalDiscussion/$postType?limit=$postLimit") // Update the URL here
+      .get(uri"https://oauth.reddit.com/r/$subreddit/$postType?limit=$postLimit")
 
     val response = Try(request.send(backend)).getOrElse(return Left("Failed to send request."))
 
@@ -58,12 +58,12 @@ class RedditClient(env: mutable.Map[String, String], rateLimitHandler: RateLimit
     }
 
     response.body match {
-      case Right(content) => Right(Json.parse(content))
+      case Right(content) =>
+        Right(Json.parse(content)) // If the response is successful, parse the JSON content and return it.
+
       case Left(error) =>
-        println(s"Error fetching posts: $error")
-        Left(s"Error fetching posts: $error")
+        println(s"Error fetching posts: $error") // If there's an error, log the error message.
+        Left(s"Error fetching posts: $error") // Return the error message in a Left to indicate failure.
     }
   }
-
 }
-
