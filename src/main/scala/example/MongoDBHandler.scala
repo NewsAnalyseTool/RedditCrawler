@@ -14,7 +14,7 @@ import scala.util.{Failure, Success}
 class MongoDBHandler(env: mutable.Map[String, String]) {
   private val logger = LoggerFactory.getLogger(getClass)
   private val mongoClient: MongoClient = MongoClient(env.getOrElse("CONNECTION_STRING", ""))
-  private val database: MongoDatabase = mongoClient.getDatabase("Projektstudium")
+  private val database: MongoDatabase = mongoClient.getDatabase("Reddit")
   private val collection: MongoCollection[Document] = database.getCollection("reddit_raw_data")
 
   // Ensuring that the date field has a unique index
