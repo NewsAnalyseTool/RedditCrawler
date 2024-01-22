@@ -6,6 +6,7 @@ import play.api.libs.json.{JsBoolean, JsNumber, JsString, JsValue}
 import org.slf4j.LoggerFactory
 import scala.collection.mutable
 
+
 object RedditAPI {
   private val logger = LoggerFactory.getLogger(getClass)
   val environment = new Environment
@@ -27,6 +28,8 @@ object RedditAPI {
         redditClient.getPosts(token, 1000, desiredPostType, subreddit) match {
           case Right(json) =>
             val formattedPosts = postFormatter.format(json, ignoreEmptySelftext = true)
+            println(json)
+            println(formattedPosts)
             savePostsToMongo(formattedPosts)
           case Left(error) =>
             println(s"Error fetching posts from $subreddit: $error")
