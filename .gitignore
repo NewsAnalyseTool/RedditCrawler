@@ -33,5 +33,5 @@ Thumbs.db
 # pom.xml.versionsBackup
 
 # If you have other specific files or directories to ignore, add them here
-
+/output
 
