@@ -1,7 +1,6 @@
 package example
 import org.mongodb.scala._
 import org.mongodb.scala.model.Filters._
-import org.mongodb.scala.model.Updates._
 import org.mongodb.scala.model.{IndexOptions, Indexes, UpdateOptions}
 import org.slf4j.LoggerFactory
 
@@ -11,31 +10,29 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
+/**
+ * Manages MongoDB operations for storing and updating documents.
+ *
+ * Initializes database connection and sets up a unique index on the date field.
+ *
+ * @param env Configuration map with database connection string.
+ */
 class MongoDBHandler(env: mutable.Map[String, String]) {
   private val logger = LoggerFactory.getLogger(getClass)
   private val mongoClient: MongoClient = MongoClient(env.getOrElse("CONNECTION_STRING", ""))
   private val database: MongoDatabase = mongoClient.getDatabase("Reddit")
   private val collection: MongoCollection[Document] = database.getCollection("reddit_raw_data")
 
-  // Ensuring that the date field has a unique index
   collection.createIndex(Indexes.ascending("date"), IndexOptions().unique(true)).toFuture().onComplete {
     case Success(result) => logger.info(s"Index creation result: $result")
     case Failure(e) => logger.error("Failed to create index", e)
   }
 
-  def upsertDocument(document: Document): Unit = {
-    val date = document.getString("date")
-    val updateOptions = new UpdateOptions().upsert(true)
-
-    val updateDoc = Document(document)
-    updateDoc.remove("_id") // Remove the _id field as we are using date for uniqueness
-
-    val update = Document("$set" -> updateDoc)
-
-    val updateObservable = collection.updateOne(equal("date", date), update, updateOptions)
-    observeResults(updateObservable)
-  }
-
+  /**
+   * Inserts a document if no existing document has the same date.
+   *
+   * @param document Document to insert.
+   */
   def insertDocument(document: Document): Unit = {
     val date = document.getString("date")
 
@@ -54,6 +51,12 @@ class MongoDBHandler(env: mutable.Map[String, String]) {
   }
 
 
+  /**
+   * Logs results of MongoDB operations.
+   *
+   * @param observable MongoDB operation to observe.
+   * @tparam T Type of the operation result.
+   */
   private def observeResults[T](observable: Observable[T]): Unit = {
     observable.subscribe(new Observer[T] {
       override def onNext(result: T): Unit = logger.info(s"Processed: $result")

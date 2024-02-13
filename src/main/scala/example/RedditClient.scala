@@ -6,9 +6,20 @@ import sttp.client3.{HttpURLConnectionBackend, UriContext, basicRequest}
 import scala.collection.mutable
 import scala.util.Try
 
+/**
+ * Client for fetching Reddit data, handling authentication and rate limits.
+ *
+ * @param env A map containing environment configuration such as client ID, secret, etc.
+ * @param rateLimitHandler An instance of RateLimitHandler to manage API call rate limits.
+ */
 class RedditClient(env: mutable.Map[String, String], rateLimitHandler: RateLimitHandler) {
   val backend = HttpURLConnectionBackend()
 
+  /**
+   * Retrieves an access token for Reddit API authentication.
+   *
+   * @return An access token as a String. Returns an empty string in case of failure.
+   */
   def getAccessToken(): String = {
     val clientId = env.getOrElse("CLIENT_ID", "")
     val clientSecret = env.getOrElse("CLIENT_SECRET", "")
@@ -39,6 +50,15 @@ class RedditClient(env: mutable.Map[String, String], rateLimitHandler: RateLimit
     }
   }
 
+  /**
+   * Fetches posts from a specific subreddit using the Reddit API.
+   *
+   * @param token     The access token for API authentication.
+   * @param postLimit The maximum number of posts to fetch.
+   * @param postType  The type of posts to fetch (e.g., "new", "hot").
+   * @param subreddit The subreddit from which to fetch posts.
+   * @return Either an error message or the fetched posts as JsValue.
+   */
   def getPosts(token: String, postLimit: Int, postType: String, subreddit: String): Either[String, JsValue] = {
     val username = env.getOrElse("USERNAME", "")
 
@@ -59,11 +79,11 @@ class RedditClient(env: mutable.Map[String, String], rateLimitHandler: RateLimit
 
     response.body match {
       case Right(content) =>
-        Right(Json.parse(content)) // If the response is successful, parse the JSON content and return it.
+        Right(Json.parse(content))
 
       case Left(error) =>
-        println(s"Error fetching posts: $error") // If there's an error, log the error message.
-        Left(s"Error fetching posts: $error") // Return the error message in a Left to indicate failure.
+        println(s"Error fetching posts: $error")
+        Left(s"Error fetching posts: $error")
     }
   }
 }

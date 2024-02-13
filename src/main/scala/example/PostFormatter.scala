@@ -4,7 +4,17 @@ import play.api.libs.json._
 import java.time.format.DateTimeFormatter
 import java.time.{Instant, ZoneId, ZonedDateTime}
 
+/**
+ * Formats Reddit post data from JSON.
+ */
 class PostFormatter {
+  /**
+   * Converts JSON containing Reddit posts to a formatted version.
+   *
+   * @param json                JSON to format.
+   * @param ignoreEmptySelftext If true, skips posts with empty selftext.
+   * @return Formatted posts as JSON.
+   */
   def format(json: JsValue, ignoreEmptySelftext: Boolean = false): JsValue = {
     val posts = (json \ "data" \ "children").as[JsArray].value
     val formattedPosts = posts.flatMap { post =>
@@ -13,7 +23,7 @@ class PostFormatter {
       val text = (data \ "selftext").as[String]
 
       if (ignoreEmptySelftext && text.isEmpty) {
-        None // Skip post if ignoreEmptySelftext is true and selftext is empty
+        None
       } else {
         val createdUtc = (data \ "created_utc").as[Long]
         val instant = Instant.ofEpochSecond(createdUtc)
